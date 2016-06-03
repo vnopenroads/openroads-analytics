@@ -10,7 +10,8 @@ var AAStats = React.createClass({
   propTypes: {
     stats: React.PropTypes.object,
     adminAreas: React.PropTypes.array,
-    tofixtasks: React.PropTypes.object
+    tofixtasks: React.PropTypes.object,
+    projects: React.PropTypes.object
   },
 
   render: function () {
@@ -31,6 +32,11 @@ var AAStats = React.createClass({
 
     let completeness = formatPercent(this.props.stats && this.props.stats.completeness && this.props.stats.completeness.length);
 
+    let projects = '-';
+    if (this.props.projects.fetched) {
+      projects = formatThousands(this.props.projects.data.projects.meta.total);
+    }
+
     return (
       <div className='aa-stats-row aa-stats-row--completeness'>
         <div className='inner'>
@@ -40,7 +46,7 @@ var AAStats = React.createClass({
               <li className='aa-stats__element'>
                 <div className='wrapper'>
                   <strong><span className='highlight'>{completeness}</span> Complete</strong>
-                  <Dropdown element='span' className='dropdown left' triggerTitle='View additional info' triggerClassName='bttn-info' triggerText='View additional info'>
+                  <Dropdown element='span' className='dropdown left' triggerClassName='bttn-info' triggerText='View additional info'>
                     <div className='aa-stats-info'>
                       <p>Completeness of this area's road network, based on it's extent and number of issues.</p>
                     </div>
@@ -54,7 +60,7 @@ var AAStats = React.createClass({
               </li>
               <li className='aa-stats__element'>
                 <div className='wrapper'>
-                  <strong><span className='highlight'>-</span> Projects</strong>
+                  <strong><span className='highlight'>{projects}</span> Projects</strong>
                 </div>
               </li>
               <li className='aa-stats__element'>

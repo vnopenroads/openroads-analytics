@@ -4,22 +4,22 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router';
 import { push } from 'react-router-redux';
 import ReactPaginate from 'react-paginate';
-import { fetchTofixTasks, fetchAdminSubregions } from '../actions/action-creators';
-import AATofixTasks from '../components/aa-tofix-tasks';
+import { fetchProjects, fetchAdminSubregions } from '../actions/action-creators';
+import AAProjects from '../components/project-list';
 import PageHeader from '../components/page-header';
 
-var TofixTasks = React.createClass({
-  displayName: 'TofixTasks',
+var Projects = React.createClass({
+  displayName: 'Projects',
 
   propTypes: {
     children: React.PropTypes.object,
-    _fetchTofixTasks: React.PropTypes.func,
+    _fetchProjects: React.PropTypes.func,
     _fetchAdminSubregions: React.PropTypes.func,
     _push: React.PropTypes.func,
     subregions: React.PropTypes.object,
     params: React.PropTypes.object,
     location: React.PropTypes.object,
-    tofixtasks: React.PropTypes.object
+    projects: React.PropTypes.object
   },
 
   perPage: 20,
@@ -31,39 +31,39 @@ var TofixTasks = React.createClass({
   },
 
   getTotalPages: function () {
-    let {total, limit} = this.props.tofixtasks.data.tasks.meta;
+    let {total, limit} = this.props.projects.data.projects.meta;
     return Math.ceil(total / limit);
   },
 
   componentDidMount: function () {
     console.log('this.props.params.aaId', this.props.params.aaId);
     this.props._fetchAdminSubregions(this.props.params.aaId || null);
-    this.props._fetchTofixTasks(this.props.params.aaId || null, this.getPage(), this.perPage);
+    this.props._fetchProjects(this.props.params.aaId || null, this.getPage(), this.perPage);
   },
 
   componentDidUpdate: function (prevProps, prevState) {
-    console.group('TofixTasks componentDidUpdate');
+    console.group('Projects componentDidUpdate');
     if (this.props.params.aaId !== prevProps.params.aaId) {
       console.log('aaId changed');
       if (!this.props.subregions.fetching) {
         console.log('update subregions');
         this.props._fetchAdminSubregions(this.props.params.aaId);
       }
-      if (!this.props.tofixtasks.fetching) {
-        console.log('update tofixtasks');
-        this.props._fetchTofixTasks(this.props.params.aaId, this.getPage(), this.perPage);
+      if (!this.props.projects.fetching) {
+        console.log('update projects');
+        this.props._fetchProjects(this.props.params.aaId, this.getPage(), this.perPage);
       }
     } else if (this.props.location.query.page && this.getPage() !== prevProps.location.query.page) {
       console.log('page changed');
-      this.props._fetchTofixTasks(this.props.params.aaId, this.getPage(), this.perPage);
+      this.props._fetchProjects(this.props.params.aaId, this.getPage(), this.perPage);
     } else {
       console.log('NOT update');
     }
-    console.groupEnd('TofixTasks componentDidUpdate');
+    console.groupEnd('Projects componentDidUpdate');
   },
 
   handlePageClick: function (d) {
-    let url = `analytics/${this.props.subregions.id}/tasks?page=${d.selected + 1}`;
+    let url = `analytics/${this.props.subregions.id}/projects?page=${d.selected + 1}`;
     this.props._push(url);
   },
 
@@ -83,28 +83,28 @@ var TofixTasks = React.createClass({
   },
 
   renderList: function () {
-    let allFetched = this.props.subregions.fetched && this.props.tofixtasks.fetched;
-    let someFething = this.props.subregions.fetching || this.props.tofixtasks.fetching;
+    let allFetched = this.props.subregions.fetched && this.props.projects.fetched;
+    let someFething = this.props.subregions.fetching || this.props.projects.fetching;
 
     return (
-      <AATofixTasks
+      <AAProjects
         fetched={allFetched}
         fetching={someFething}
-        adminAreaId={Number(this.props.tofixtasks.data.id)}
-        adminAreaName={this.props.tofixtasks.data.name}
-        meta={this.props.tofixtasks.data.tasks.meta}
-        tasks={this.props.tofixtasks.data.tasks.results}
-        error={this.props.tofixtasks.error} />
+        adminAreaId={Number(this.props.projects.data.id)}
+        adminAreaName={this.props.projects.data.name}
+        meta={this.props.projects.data.projects.meta}
+        projects={this.props.projects.data.projects.results}
+        error={this.props.projects.error} />
     );
   },
 
   renderPagination: function () {
     // Only show pagination after EVERYTHING has loaded.
-    let {fetched: tasksFetched, fetching: tasksFetching, error} = this.props.tofixtasks;
+    let {fetched: projectsFetched, fetching: projectsFetching, error} = this.props.projects;
     let {fetched: regFetched, fetching: regFetching} = this.props.subregions;
 
-    let allFetched = tasksFetched && regFetched;
-    let someFething = tasksFetching || regFetching;
+    let allFetched = projectsFetched && regFetched;
+    let someFething = projectsFetching || regFetching;
 
     if (this.getTotalPages() <= 1 || error || !allFetched || someFething) {
       return null;
@@ -154,16 +154,16 @@ var TofixTasks = React.createClass({
 function selector (state) {
   return {
     subregions: state.adminSubregions,
-    tofixtasks: state.tofixtasks
+    projects: state.projects
   };
 }
 
 function dispatcher (dispatch) {
   return {
     _fetchAdminSubregions: (aaid) => dispatch(fetchAdminSubregions(aaid)),
-    _fetchTofixTasks: (aaid, page, limit) => dispatch(fetchTofixTasks(aaid, page, limit)),
+    _fetchProjects: (aaid, page, limit) => dispatch(fetchProjects(aaid, page, limit)),
     _push: (loation) => dispatch(push(loation))
   };
 }
 
-module.exports = connect(selector, dispatcher)(TofixTasks);
+module.exports = connect(selector, dispatcher)(Projects);
